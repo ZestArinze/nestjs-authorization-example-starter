@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 
@@ -26,7 +27,7 @@ export class AuthService {
       return null;
     }
 
-    delete user.password;
+    delete (user as Partial<User>).password;
 
     return user;
   }

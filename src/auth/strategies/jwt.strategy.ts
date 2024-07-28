@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { AccountStatus } from '../../users/enums/user.enums';
 import { UsersService } from '../../users/users.service';
 
 @Injectable()
@@ -29,12 +30,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException();
     }
 
-    if (user.accountStatus !== 'active') {
+    if (user.accountStatus !== AccountStatus.Active) {
       throw new UnauthorizedException(
         `${user.username}, account ${user.accountStatus}`,
       );
     }
 
-    return { userId: payload.sub, username: payload.username };
+    return user;
   }
 }

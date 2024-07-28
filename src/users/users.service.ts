@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindUsersDto } from './dto/find-users.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -26,7 +27,7 @@ export class UsersService {
 
     const newUser = await this.usersRepository.save(user);
 
-    delete newUser.password;
+    delete (newUser as Partial<User>).password;
 
     return newUser;
   }
@@ -40,16 +41,27 @@ export class UsersService {
   async findOne(
     username: string,
     selectSecrets: boolean = false,
-  ): Promise<User | undefined> {
-    return this.usersRepository.findOne({
-      where: { username },
-      select: {
-        id: true,
-        username: true,
-        name: true,
-        accountStatus: true,
-        password: selectSecrets,
-      },
-    });
+  ): Promise<User | null> {
+    const query = this.usersRepository
+      .createQueryBuilder('user')
+      .where('user.username = :username', { username });
+    if (selectSecrets) {
+      query.addSelect('user.password');
+    }
+
+    return await query.getOne();
+  }
+
+  async update(userId: number, dto: UpdateUserDto) {
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    const { accountStatus } = dto;
+
+    user.accountStatus = accountStatus ?? user.accountStatus;
+
+    return await this.usersRepository.save(user);
   }
 }

@@ -17,11 +17,18 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   // the following signature: validate(username: string, password:string): any
   // The validate method in LocalStrategy is where the actual validation of user credentials happens, whereas
   // in our JWT Strategy, we called the validate method after the token's validity has been confirmed.
+
   async validate(username: string, password: string): Promise<any> {
     const user = await this.authService.validateUser({ username, password });
     if (!user) {
       throw new UnauthorizedException();
     }
-    return user;
+
+    //  Passport automatically creates a user object, based on the value we return from the validate() method, and assigns it to the Request object as req.user
+    return {
+      id: user.id,
+      username: user.username,
+      accountStatus: user.accountStatus,
+    };
   }
 }

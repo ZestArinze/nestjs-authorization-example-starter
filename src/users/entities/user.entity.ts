@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { AccountStatus } from '../enums/user.enums';
 
 @Entity()
 export class User {
@@ -14,6 +15,6 @@ export class User {
   @Column({ nullable: true })
   name?: string;
 
-  @Column({ default: 'inactive' })
-  accountStatus: 'active' | 'inactive';
+  @Column({ default: AccountStatus.Inactive })
+  accountStatus: AccountStatus;
 }
